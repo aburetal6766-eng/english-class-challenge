@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>My Certificates — English Class Challenge!</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23FFD24A' d='M12 2l3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/styles.css">
+<meta name="robots" content="noindex">
+</head>
+<body>
+<div class="bg"></div>
+<div class="app" id="app"><p class="s-sub">Loading…</p></div>
+<script src="/static/common.js"></script>
+<script src="/static/student-view.js"></script>
+<script>
+(async function () {
+  const app = document.getElementById('app');
+  const token = location.pathname.split('/')[2];
+  const r = await fetch('/api/certs/' + token);
+  if (!r.ok) { app.innerHTML = '<div class="bigcard"><div class="who">Not found</div><p class="s-sub">Please check the link with your teacher.</p></div>'; return; }
+  const d = await r.json();
+  const nm = d.certs[0].englishName || d.certs[0].name;
+  app.innerHTML = `
+    <div class="s-head"><div class="s-brand">English Class Challenge!<small>Think fast. Answer right. Cheer for your class!</small></div></div>
+    <div class="result ok pop"><div class="small">Congratulations</div><div class="big">${ECC.esc(nm)}</div><div class="small">${ECC.esc(d.dateText)}</div></div>
+    ${d.certs.map(c => `<div class="bigcard cls-${c.classId}">
+      <span class="badge">Class ${c.classId}</span>
+      <div class="who" style="font-size:30px">${c.type === 'achievement' ? 'Certificate of Achievement' : 'Winning Class Certificate'}</div>
+      <p class="s-sub">${c.type === 'achievement' ? c.rankText + ' place among all students' : 'Member of the winning class'}</p>
+      <a class="cta" href="/c/${token}/${c.id}.pdf" download="${ECC.esc(c.file)}">Download My Certificate (PDF)</a>
+      <p class="s-sub" style="font-size:13px">Certificate code: <b style="color:#fff">${ECC.esc(c.code)}</b></p>
+    </div>`).join('')}
+    <div class="bigcard"><div class="qrbox"><img src="/c/${token}/qr.svg" alt="QR code for this certificate page"></div><p class="s-sub" style="font-size:13px">Scan to open this page on another device</p></div>`;
+})();
+</script>
+</body>
+</html>

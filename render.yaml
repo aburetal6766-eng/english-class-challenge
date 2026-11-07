@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: english-class-challenge
+    runtime: node
+    plan: free
+    buildCommand: "echo no build needed"
+    startCommand: node server.js
+    envVars:
+      - key: AREEJ_PASSWORD
+        sync: false
+      - key: WAAD_PASSWORD
+        sync: false
