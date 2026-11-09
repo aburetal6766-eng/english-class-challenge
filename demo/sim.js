@@ -1,7 +1,7 @@
 /* Single-device simulation of a live round (same scoring rules as the server). */
 (function () {
   const QUESTIONS = /*QUESTIONS*/[];
-  const QSEC = 20, REVEAL = 5, INTRO = 3500;
+  const QSEC = 30, REVEAL = 5, INTRO = 3500;
   const CL = ['1A', '1B', '1C'];
   const NAMES = {
     '1A': ['Sara Alotaibi', 'Lama Alharbi', 'Noura Alqahtani', 'Reem Alshehri', 'Hala Alzahrani', 'Jana Almutairi'],

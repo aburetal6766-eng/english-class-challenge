@@ -56,6 +56,19 @@
 
   // ------------------------------------------------------------ original synthesized sound effects
   const Snd = (ECC.sound = { enabled: false, ctx: null });
+  // loud, clear output: every sound goes through a boosted master bus with a limiter (no distortion)
+  const BOOST = 2.6;
+  let bus = null;
+  function out(c) {
+    if (!bus) {
+      const comp = c.createDynamicsCompressor();
+      comp.threshold.value = -14; comp.knee.value = 6; comp.ratio.value = 12; comp.attack.value = 0.003; comp.release.value = 0.15;
+      const master = c.createGain(); master.gain.value = 1.8;
+      master.connect(comp).connect(c.destination);
+      bus = master;
+    }
+    return bus;
+  }
   function ctx() {
     if (!Snd.ctx) Snd.ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (Snd.ctx.state === 'suspended') Snd.ctx.resume();
@@ -70,9 +83,9 @@
     o.frequency.setValueAtTime(freq, t);
     if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq + slide), t + dur);
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol, t + attack);
+    g.gain.exponentialRampToValueAtTime(Math.min(1, vol * BOOST), t + attack);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g).connect(c.destination);
+    o.connect(g).connect(out(c));
     o.start(t); o.stop(t + dur + 0.05);
   }
   function noise(start, dur, vol = 0.1) {
@@ -81,9 +94,9 @@
     const d = buf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
     const s = c.createBufferSource(); s.buffer = buf;
-    const g = c.createGain(); g.gain.value = vol;
+    const g = c.createGain(); g.gain.value = Math.min(1, vol * BOOST);
     const f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 2500;
-    s.connect(f).connect(g).connect(c.destination);
+    s.connect(f).connect(g).connect(out(c));
     s.start(c.currentTime + start);
   }
   Snd.unlock = () => { try { ctx(); } catch (e) { } };
