@@ -44,7 +44,7 @@ function freshData() {
     v: 1,
     settings: {
       compName: 'English Class Challenge!',
-      questionSeconds: 30,
+      questionSeconds: 20,
       revealSeconds: 6,
       teacher1: 'Areej Al-Ameer',
       teacher2: 'Waad Al-Marzouq',
@@ -80,6 +80,9 @@ function load() {
     const drop = ["Gino's Italian Restaurant", "Andy's Bookstore is between", 'The health club is ____ the park'];
     if (D.modes && D.modes.live) D.modes.live.questions = D.modes.live.questions.filter(q => !drop.some(d => q.text.startsWith(d)));
   }
+  // update 2026-11-10: back to 20 s per question
+  if (!D.settings.upd1110) { D.settings.questionSeconds = 20; D.settings.upd1110 = true; }
+
   D.teachers = D.teachers || f.teachers;
   D.auth = D.auth || {};
   D.sessions = D.sessions || {};
