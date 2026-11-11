@@ -16,7 +16,29 @@
 <script src="/static/screen-view.js"></script>
 <script>
   const view = ECC.Screen(document.getElementById('root'));
-  ECC.connect({ role: 'screen' }, s => view.update(s));
+  let current = null;
+  ECC.connect({ role: 'screen' }, s => { current = s; view.update(s); });
+
+  // Hidden shortcut: press S (or س on an Arabic keyboard) to start the quiz from the lobby.
+  // Only the host teacher's session can start it; a small note appears only if something is wrong.
+  function note(msg) {
+    const n = document.createElement('div');
+    n.textContent = msg;
+    n.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:99;background:rgba(10,14,53,.92);color:#fff;font:800 15px Nunito,Tajawal,sans-serif;padding:10px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.25)';
+    document.body.appendChild(n); setTimeout(() => n.remove(), 2500);
+  }
+  let starting = false;
+  document.addEventListener('keydown', async e => {
+    if (e.code !== 'KeyS' || e.ctrlKey || e.metaKey || e.altKey || e.repeat || starting) return;
+    if (!current || current.status !== 'lobby') {
+      if (current && current.status === 'idle') note('افتحي ردهة المسابقة من لوحة المعلمتين أولًا');
+      return;
+    }
+    starting = true;
+    try { await ECC.post('/api/admin/round/start'); view.enableSound && view.enableSound(); }
+    catch (err) { note(err.code === 'not_host' ? 'التحكم عند المعلمة الأخرى — انقلي التحكم إليكِ أولًا' : err.message); }
+    setTimeout(() => { starting = false; }, 1500);
+  });
   document.addEventListener('dblclick', () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); });
 </script>
 </body>
